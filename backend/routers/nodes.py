@@ -18,11 +18,11 @@ def add_node():
     return {"message": "added"}
 
 
-@router.post()("/nodes/{id}", tags=["nodes"])
+@router.post("/nodes/{id}", tags=["nodes"])
 def update_node(id: int):
     return {"message": "updated"}
 
 
-@router.delete()("/nodes/{id}", tags=["nodes"])
+@router.delete("/nodes/{id}", tags=["nodes"])
 def delete_node(id: int):
     return {"message": "deleted"}

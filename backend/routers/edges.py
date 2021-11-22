@@ -18,11 +18,11 @@ def add_edge():
     return {"message": "added"}
 
 
-@router.post()("/edges/{id}", tags=["edges"])
+@router.post("/edges/{id}", tags=["edges"])
 def update_edge(id: int):
     return {"message": "updated"}
 
 
-@router.delete()("/edges/{id}", tags=["edges"])
+@router.delete("/edges/{id}", tags=["edges"])
 def delete_edge(id: int):
     return {"message": "deleted"}
