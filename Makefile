@@ -7,7 +7,7 @@ else
 	PIP = $(VENV)/bin/pip
 endif
 
-run: init
+run:
 	uvicorn backend.main:app --reload
 
 init: requirements.txt
