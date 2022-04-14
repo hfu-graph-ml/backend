@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from routers import nodes, edges, graphs
+from backend.routers import nodes, edges, graphs
 
 app = FastAPI()
 
