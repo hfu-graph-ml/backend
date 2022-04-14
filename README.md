@@ -12,7 +12,22 @@ The following tools are needed:
 - Pip
 - Make
 
-### Usage on Windows
+### Initialization
+
+These steps are required to setup the development enviroment:
+
+```shell
+git clone git@github.com:hfu-graph-ml/backend.git
+make init
+```
+
+### Activation
+
+On Linux the VENV activation is straight forward:
+
+```shell
+source .venv/bin/activate
+```
 
 There are slight differences between CMD and PowerShell in Windows (as always). It is **recommended** to use PS Core, as
 it is more modern and resembles a Linux shell more closely (cd, rm, ...)
@@ -25,22 +40,21 @@ it is more modern and resembles a Linux shell more closely (cd, rm, ...)
 .venv/Scripts/Activate.ps1
 ```
 
-### Initialization
+### Install dependencies and run server
 
-These steps are required to setup the development enviroment
+To install dependencies run:
 
 ```shell
-git clone git@github.com:hfu-graph-ml/backend.git
-cd backend
-make run
+make install
 ```
 
-`make run` will initizialize the `venv`, install all dependencies listed in `requirements.txt` and start the router
+After that we can run the server via `make run`.
 
 ### Adding new dependencies
 
+First make sure you activated the VENV. Then run:
+
 ```shell
-.venv/Scripts/Activate.ps1
 pip install <package>
 pip freeze > requirements.txt
 ```

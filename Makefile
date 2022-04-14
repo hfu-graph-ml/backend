@@ -1,3 +1,5 @@
+.PHONY: run init install
+
 # Virtual enviroment directory
 VENV = .venv
 
@@ -10,8 +12,13 @@ endif
 run:
 	uvicorn backend.main:app --reload
 
-init: requirements.txt
-	python -m venv $(VENV)
+install:
+# Check if venv is activated
+ifneq ("$(wildcard $(VIRTUAL_ENV))","")
 	$(PIP) install -r requirements.txt
+endif
 
-.PHONY: run init
+init:
+ifeq ("$(wildcard $(VENV))","")
+	python -m venv $(VENV)
+endif
