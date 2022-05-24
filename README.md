@@ -26,7 +26,7 @@ make init
 On Linux the VENV activation is straight forward:
 
 ```shell
-source .venv/bin/activate
+source .venv/Scripts/activate
 ```
 
 There are slight differences between CMD and PowerShell in Windows (as always). It is **recommended** to use PS Core, as
