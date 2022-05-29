@@ -1,4 +1,5 @@
 from typing import Callable, Dict, List, Optional, Tuple, Type, Union
+import sys
 
 import gym
 import torch as th
@@ -19,13 +20,14 @@ class CustomNetwork(nn.Module):
 
   def __init__(
       self,
+      cfg: dict,
       feature_dim: int,
-      last_layer_dim_pi: int = 3,
+      last_layer_dim_pi: int = 42,
       last_layer_dim_vf: int = 64,
   ):
     super(CustomNetwork, self).__init__()
 
-    print('init')
+    self.cfg = cfg
     # IMPORTANT:
     # Save output dimensions, used to create the distributions
     self.latent_dim_pi = last_layer_dim_pi
@@ -72,38 +74,49 @@ class CustomNetwork(nn.Module):
 
   def forward_actor(self, features: th.Tensor) -> th.Tensor:
     # (GCPN eq 4)
-    print('forward_actor')
 
     a_f_dist = self.a_f_mlp(features)
     a_f = th.multinomial(a_f_dist, 1)
-    a_f_dist = th.zeros_like(a_f_dist)
-    a_f_dist[a_f] = 1  # make distribution so that the already sampled node is sampled again later
+    a_f_dist = th.where(th.tile(a_f, (1, a_f_dist.shape[1])) == th.tile(
+        th.arange(0, a_f_dist.shape[1]), (a_f_dist.shape[0], 1)), th.ones_like(a_f_dist), th.zeros_like(a_f_dist))
     # TODO: does first node have to be from the connected graph?
 
-    emb_cat_s = th.cat((th.tile(a_f, [1, features.shape[1], 1]), features), axis=2)
-    print(emb_cat_s)
+    # TODO: problem: a_f with shape (64, 1) repeated as (64, 20, 1) (and with 1 in front)
+    a_f_repeated = th.tile(th.reshape(a_f, (a_f.shape[0], 1, 1)), (1, features.shape[1], 1))
+    emb_cat_s = th.cat((a_f_repeated, features), axis=2)
     a_s_dist = self.a_s_mlp(emb_cat_s)
-    print(a_f)
-    a_s_dist[0, a_f] = 0  # make sure that first node is not picked as second node
+    test_s = a_s_dist
+    a_s_dist = a_s_dist + sys.float_info.epsilon  # TODO: is adding epsilon a good idea?
+    a_s_dist = th.where(th.tile(a_f, (1, a_s_dist.shape[1])) == th.tile(th.arange(0, a_s_dist.shape[1]), (
+        a_s_dist.shape[0], 1)), th.zeros_like(a_s_dist), a_s_dist)  # make sure that first node is not picked as second node
+
+    # if th.sum(a_s_dist) == 0: # fix 0 distribution
+    #   a_s_dist = th.where(th.tile(a_f, (1, a_s_dist.shape[1])) == th.tile(th.arange(0, a_s_dist.shape[1]), (a_s_dist.shape[0], 1)), th.zeros_like(a_s_dist), th.ones_like(a_s_dist))
+
     a_s = th.multinomial(a_s_dist, 1)
-    a_s_dist = th.zeros_like(a_s_dist)
-    a_s_dist[a_s] = 1  # make distribution so that the already sampled node is sampled again later
+
+    a_s_dist = th.where(th.tile(a_s, (1, a_s_dist.shape[1])) == th.tile(th.arange(0, a_s_dist.shape[1]), (a_s_dist.shape[0], 1)), th.ones_like(
+        a_s_dist), th.zeros_like(a_s_dist))  # make distribution so that the already sampled node is sampled again later
 
     a_t_dist = self.a_t_mlp_1(features)
     a_t_dist = th.sum(a_t_dist, dim=1)
     a_t_dist = self.a_t_mlp_2(a_t_dist)
     a_t = th.multinomial(a_t_dist, 1)
-    a_t_dist = th.zeros_like(a_t_dist)
-    a_t_dist[a_t] = 1  # make distribution so that the already sampled termination is sampled again later
+    a_t_dist = th.where(th.tile(a_t, (1, a_t_dist.shape[1])) == th.tile(th.arange(0, a_t_dist.shape[1]), (a_t_dist.shape[0], 1)), th.ones_like(
+        a_t_dist), th.zeros_like(a_t_dist))  # make distribution so that the already sampled termination is sampled again later
+    # a_t_dist = th.zeros_like(a_t_dist)
+    # a_t_dist[0, a_t] = 1  # make distribution so that the already sampled termination is sampled again later
 
     # action prediction a (GCPN eq 3)
     # https://github.com/bowenliu16/rl_graph_generation/blob/master/rl-baselines/baselines/ppo1/gcn_policy.py#L327
-    a = th.tensor([[a_f_dist, a_s_dist, a_t_dist]], dtype=th.float32)
+    a = th.cat((a_f_dist, a_s_dist, a_t_dist), dim=1)
 
     return a
 
   def forward_critic(self, features: th.Tensor) -> th.Tensor:
-    return self.value_net(features)
+    v = self.value_net(features)
+    v = th.sum(v, axis=1)
+    return v
 
 
 class CustomActorCriticPolicy(ActorCriticPolicy):
@@ -130,7 +143,6 @@ class CustomActorCriticPolicy(ActorCriticPolicy):
     )
     # Disable orthogonal initialization
     self.ortho_init = False
-    
 
   def _build_mlp_extractor(self) -> None:
-    self.mlp_extractor = CustomNetwork(self.features_dim, self.cfg)
+    self.mlp_extractor = CustomNetwork(self.cfg, self.features_dim)

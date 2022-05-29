@@ -1,7 +1,7 @@
 from networkx.generators.lattice import grid_2d_graph
 import random
 import networkx as nx
-import numpy as np
+import copy
 
 random.seed(101)
 
@@ -10,12 +10,11 @@ base_graph = nx.Graph()
 for i in range(0, 20):
   base_graph.add_node(i, age=i+1, name=i+1)
 base_graph.add_edge(0, 1)
-
 # nx.draw(base_graph, with_labels=True)
 
 
 # handcrafted graph
-dataset_hand = base_graph
+dataset_hand = copy.deepcopy(base_graph)
 dataset_hand.add_edge(1, 3)
 dataset_hand.add_edge(3, 7)
 dataset_hand.add_edge(7, 8)
@@ -43,11 +42,11 @@ dataset_hand.add_edge(10, 17)
 dataset_hand.add_edge(5, 11)
 dataset_hand.add_edge(14, 4)
 dataset_hand.add_edge(2, 13)
-nx.draw_networkx(dataset_hand, with_labels=True)
+# nx.draw_networkx(dataset_hand, with_labels=True)
 
 
 # randomly generated grid datasets with nodes from basket
-dataset = [dataset_hand for i in range(10)]
+dataset = [copy.deepcopy(dataset_hand) for i in range(10)]
 # dataset = dataset[0]
 # while_counter = 0
 

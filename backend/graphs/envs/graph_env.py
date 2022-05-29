@@ -15,19 +15,18 @@ class GraphEnv(gym.Env):
   def init(self, cfg: config.Config, base_graph, dataset, reward_step_total=1):
     self.cfg = cfg
     self.base_graph = base_graph
-    self.graph = self.base_graph
+    self.graph = copy.deepcopy(self.base_graph)
     self.reward_step_total = reward_step_total
 
     self.counter = 0
 
     self.dataset = dataset
-    self.max_node = 20
-    self.max_action = 100
+    self.num_nodes = self.base_graph.number_of_nodes()
 
-    self.action_space = gym.spaces.MultiDiscrete([self.max_node, self.max_node, 2])
+    self.action_space = gym.spaces.MultiDiscrete([self.num_nodes, self.num_nodes, 2])
     self.observation_space = gym.spaces.Dict({
-        'adj': gym.spaces.Box(low=0, high=self.max_node, shape=(1, self.max_node, self.max_node), dtype=np.uint8),
-        'node': gym.spaces.Box(low=0, high=self.max_node, shape=(1, self.max_node, self.cfg['general']['num_node_features']), dtype=np.uint8)
+        'adj': gym.spaces.Box(low=0, high=self.num_nodes, shape=(1, self.num_nodes, self.num_nodes), dtype=np.uint8),
+        'node': gym.spaces.Box(low=0, high=self.num_nodes, shape=(1, self.num_nodes, self.cfg['general']['num_node_features']), dtype=np.uint8)
     })
 
     self.level = 0  # for curriculum learning, level starts with 0, and increase afterwards
@@ -36,7 +35,6 @@ class GraphEnv(gym.Env):
     # init
     info = {}  # info we care about
     self.graph_old = copy.deepcopy(self.graph)
-    total_nodes = self.graph.number_of_nodes()
 
     # take action
     if action[2] == 0:   # not stop
@@ -48,15 +46,15 @@ class GraphEnv(gym.Env):
     # calculate intermediate rewards
     # todo: add neccessary rules for the task
     if self.graph.number_of_edges() - self.graph_old.number_of_edges() > 0:
-      reward_step = self.reward_step_total / self.max_node
+      reward_step = self.reward_step_total / self.num_nodes
       # successfully added node/edge
     else:
-      reward_step = -self.reward_step_total / self.max_node  # edge
+      reward_step = -self.reward_step_total / self.num_nodes  # edge
       self.graph = self.graph_old
       # already exists
 
     # calculate and use terminal reward
-    if stop or self.graph.number_of_nodes() >= self.max_node - 1 or self.counter >= self.max_action:
+    if stop or len(list(nx.isolates(self.graph))) == 0:
       # property rewards
       # todo: add property reward
       reward_terminal = 1  # arbitrary choice
@@ -80,15 +78,15 @@ class GraphEnv(gym.Env):
     if new:
       self.counter = 0
 
-    # print(action)
-    # nx.draw(self.graph)
-    # plt.show()
-    # time.sleep(1)
+    print(action)
+    nx.draw(self.graph, with_labels=True)
+    plt.show()
 
     return ob, reward, new, info
 
   def reset(self):  # TODO: is reset even called?
-    self.graph = self.base_graph
+    print('reset')
+    self.graph = copy.deepcopy(self.base_graph)
     self.counter = 0
     ob = self.get_observation()
     return ob
@@ -190,14 +188,14 @@ class GraphEnv(gym.Env):
       # plt.show()
       # get observation
       n = graph_sub.number_of_nodes()
-      F = np.zeros((1, self.max_node, 1))
+      F = np.zeros((1, self.num_nodes, 1))
       F[0, :n + 1, 0] = 1
       if self.is_normalize:
         ob['adj'][i] = self.normalize_adj(F)
       else:
         ob['node'][i] = F
       # print(F)
-      E = np.zeros((1, self.max_node, self.max_node))
+      E = np.zeros((1, self.num_nodes, self.num_nodes))
       E[0, :n, :n] = np.asarray(nx.to_numpy_matrix(graph_sub))[np.newaxis, :, :]
       E[0, :n + 1, :n + 1] += np.eye(n + 1)
       ob['adj'][i] = E

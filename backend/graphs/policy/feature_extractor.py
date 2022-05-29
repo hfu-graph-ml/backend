@@ -22,9 +22,9 @@ class GCNFeaturesExtractor(BaseFeaturesExtractor):
 
     self.emb_layer = nn.Linear(observation_space['node'].shape[2], self.cfg['general']['emb_size'], bias=False)
 
-    shared_weights = th.empty([1, observation_space['adj'].shape[1], self.cfg['emb_size'],
-                              self.cfg['emb_size']])  # TODO: is this right?
-    # shared_weights = th.empty([1, observation_space['adj'].shape[1], observation_space['node'].shape[-1], self.cfg['emb_size']])
+    shared_weights = th.empty([1, observation_space['adj'].shape[1], self.cfg['general']['emb_size'],
+                              self.cfg['general']['emb_size']])  # TODO: is this right?
+    # shared_weights = th.empty([1, observation_space['adj'].shape[1], observation_space['node'].shape[-1], self.cfg['general']['emb_size']])
     nn.init.xavier_uniform_(shared_weights)
     self.GCN_layer_shared_weights = nn.Parameter(shared_weights)
 
@@ -45,7 +45,7 @@ class GCNFeaturesExtractor(BaseFeaturesExtractor):
 
     emb_node = self.emb_layer(observations['node'])
     emb_node = GCN_layer(observations['adj'], emb_node)
-    for i in range(self.cfg['layer_num_g']-2):
+    for i in range(self.cfg['general']['layer_num_g']-2):
       emb_node = GCN_layer(observations['adj'], emb_node)
     emb_node = GCN_layer(observations['adj'], emb_node, is_act=False)
     emb_node = th.squeeze(emb_node, axis=1)
