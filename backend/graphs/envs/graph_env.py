@@ -1,11 +1,11 @@
 import gym
 import copy
-import time
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
 import config.config as config
+from scoring.mood_score import calculate_mood_score, valid_graph
 
 
 class GraphEnv(gym.Env):
@@ -26,7 +26,7 @@ class GraphEnv(gym.Env):
     self.action_space = gym.spaces.MultiDiscrete([self.num_nodes, self.num_nodes, 2])
     self.observation_space = gym.spaces.Dict({
         'adj': gym.spaces.Box(low=0, high=self.num_nodes, shape=(1, self.num_nodes, self.num_nodes), dtype=np.uint8),
-        'node': gym.spaces.Box(low=0, high=self.num_nodes, shape=(1, self.num_nodes, self.cfg['general']['num_node_features']), dtype=np.uint8)
+        'node': gym.spaces.Box(low=0, high=self.num_nodes, shape=(1, self.num_nodes, self.cfg['model']['num_node_features']), dtype=np.uint8)
     })
 
     self.level = 0  # for curriculum learning, level starts with 0, and increase afterwards
@@ -37,14 +37,26 @@ class GraphEnv(gym.Env):
     self.graph_old = copy.deepcopy(self.graph)
 
     # take action
-    if action[2] == 0:   # not stop
-      stop = False
-      self._add_edge(action)  # add new edge
-    else:   # stop
-      stop = True
+    self._add_edge(action)
+
+    # print actions
+    if self.cfg['debugging']['print_actions']:
+      print(action)
+    
+    # draw graph
+    if self.cfg['debugging']['draw_graph']:
+      nx.draw(self.graph, with_labels=True)
+      plt.show()
+
+    # get observation
+    ob = self.get_observation()
+    print(ob)
+
+    # read stop signal
+    stop = action[2] == 1
 
     # calculate intermediate rewards
-    # todo: add neccessary rules for the task
+    # TODO: add neccessary rules for the task
     if self.graph.number_of_edges() - self.graph_old.number_of_edges() > 0:
       reward_step = self.reward_step_total / self.num_nodes
       # successfully added node/edge
@@ -54,38 +66,34 @@ class GraphEnv(gym.Env):
       # already exists
 
     # calculate and use terminal reward
-    if stop or len(list(nx.isolates(self.graph))) == 0:
-      # property rewards
-      # todo: add property reward
-      reward_terminal = 1  # arbitrary choice
+    if stop:
+      new = True # end of episode
 
-      new = True  # end of episode
+      if valid_graph(self.graph):
+        # property rewards
+        reward_terminal = calculate_mood_score(self.graph)
+      else:
+        reward_terminal = -1 # TODO: adjust this
+
       reward = reward_step + reward_terminal
-
       # print terminal graph information
       info['final_stat'] = reward_terminal
       info['reward'] = reward
       info['stop'] = stop
+      info['graph'] = copy.deepcopy(self.graph)
+
     # use stepwise reward
     else:
       new = False
       reward = reward_step
 
-    # get observation
-    ob = self.get_observation()
-
     self.counter += 1
     if new:
       self.counter = 0
 
-    print(action)
-    nx.draw(self.graph, with_labels=True)
-    plt.show()
-
     return ob, reward, new, info
 
-  def reset(self):  # TODO: is reset even called?
-    print('reset')
+  def reset(self):
     self.graph = copy.deepcopy(self.base_graph)
     self.counter = 0
     ob = self.get_observation()

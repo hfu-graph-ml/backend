@@ -25,7 +25,10 @@ policy_kwargs = dict(
     features_extractor_kwargs=dict(cfg=cfg),
     cfg=cfg
 )
-model = PPO(CustomActorCriticPolicy, env, policy_kwargs=policy_kwargs, verbose=1)
+model = PPO(CustomActorCriticPolicy, env, policy_kwargs=policy_kwargs,
+            n_steps=cfg["training"]["steps_per_epoch"], tensorboard_log="./tensorboard_logs/model_trained_test", verbose=1)
 
 # Start training
-model.learn(2048 * 10)
+model.learn(cfg["training"]["steps_per_epoch"] * cfg["training"]["epochs"])
+
+model.save("saved_models/model_trained_test")

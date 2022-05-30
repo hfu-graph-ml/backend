@@ -1,4 +1,20 @@
-[general]
+[model]
 emb_size = 8
 layer_num_g = 4
 num_node_features = 2
+
+[training]
+steps_per_epoch = 1024
+epochs = 10
+
+[rewards]
+step_edge_correct = 0.25
+step_edge_incorrect = -0.25     # edge does already exist / nodes are the same / node degree too high 
+terminal_valid_score_min = 1.0
+terminal_valid_score_max = 10.0
+terminal_invalid = -10.0        # fewer than 28 edges / node degree histogram is not [0, 0, 4, 16]
+
+[debugging]
+draw_graph = true
+print_actions = true
+print_extracted_features = true

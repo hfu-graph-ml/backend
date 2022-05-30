@@ -81,7 +81,6 @@ class CustomNetwork(nn.Module):
         th.arange(0, a_f_dist.shape[1]), (a_f_dist.shape[0], 1)), th.ones_like(a_f_dist), th.zeros_like(a_f_dist))
     # TODO: does first node have to be from the connected graph?
 
-    # TODO: problem: a_f with shape (64, 1) repeated as (64, 20, 1) (and with 1 in front)
     a_f_repeated = th.tile(th.reshape(a_f, (a_f.shape[0], 1, 1)), (1, features.shape[1], 1))
     emb_cat_s = th.cat((a_f_repeated, features), axis=2)
     a_s_dist = self.a_s_mlp(emb_cat_s)
@@ -104,13 +103,8 @@ class CustomNetwork(nn.Module):
     a_t = th.multinomial(a_t_dist, 1)
     a_t_dist = th.where(th.tile(a_t, (1, a_t_dist.shape[1])) == th.tile(th.arange(0, a_t_dist.shape[1]), (a_t_dist.shape[0], 1)), th.ones_like(
         a_t_dist), th.zeros_like(a_t_dist))  # make distribution so that the already sampled termination is sampled again later
-    # a_t_dist = th.zeros_like(a_t_dist)
-    # a_t_dist[0, a_t] = 1  # make distribution so that the already sampled termination is sampled again later
 
-    # action prediction a (GCPN eq 3)
-    # https://github.com/bowenliu16/rl_graph_generation/blob/master/rl-baselines/baselines/ppo1/gcn_policy.py#L327
     a = th.cat((a_f_dist, a_s_dist, a_t_dist), dim=1)
-
     return a
 
   def forward_critic(self, features: th.Tensor) -> th.Tensor:

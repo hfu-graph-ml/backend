@@ -5,10 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Train Model",
             "type": "python",
             "request": "launch",
             "program": "backend/graphs/train.py",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Test Model",
+            "type": "python",
+            "request": "launch",
+            "program": "backend/graphs/test.py",
             "console": "integratedTerminal",
             "justMyCode": false
         }
