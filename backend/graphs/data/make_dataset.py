@@ -1,15 +1,16 @@
-from networkx.generators.lattice import grid_2d_graph
 import random
 import networkx as nx
 import copy
 import matplotlib.pyplot as plt
 
+from config.config import config
+
 random.seed(101)
 
 # the basket of nodes we use
 base_graph = nx.Graph()
-for i in range(0, 20):
-  base_graph.add_node(i, age=i+1, name=i+1)
+for i in range(0, config['data']['num_nodes']):
+  base_graph.add_node(i, age=i//2+1, location=i//2+1)
 # nx.draw(base_graph, with_labels=True)
 
 

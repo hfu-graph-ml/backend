@@ -1,11 +1,11 @@
 from cmath import isnan
 from typing import Tuple, TypedDict
+from h11 import Data
 import toml
 import os
+import click
 
 import utils.checks as checks
-
-# NOTE (Techassi): Maybe move this generic error class into models
 
 
 class Error:
@@ -13,10 +13,13 @@ class Error:
         self.message = message
 
 
+class DataOptions(TypedDict):
+    num_nodes: int
+    num_node_features: int
+
 class ModelOptions(TypedDict):
     emb_size: int
     layer_num_g: int
-    num_node_features: int
 
 class TrainingOptions(TypedDict):
     steps_per_epoch: int
@@ -31,10 +34,12 @@ class RewardsOptions(TypedDict):
 
 class DebuggingOptions(TypedDict):
     draw_graph: bool
+    draw_correct_graphs: bool
     print_actions: bool
     print_extracted_features: bool
 
 class Config(TypedDict):
+    data: DataOptions
     model: ModelOptions
     training: TrainingOptions
     rewards: RewardsOptions
@@ -88,13 +93,11 @@ def validate(cfg: Config) -> Error:
     err : Error
         Non None if validation failed
     '''
-    if cfg['model']['emb_size'] < 0:
-        return Error('Invalid embedding size.')
-        
-    if cfg['model']['layer_num_g'] < 0:
-        return Error('Invalid layer number.')
-        
-    if cfg['model']['num_node_features'] < 0:
-        return Error('Invalid number of node features.')
 
     return None
+
+# Load config
+config_path = 'example.toml'
+config, err = read(config_path)
+if err != None:
+  click.echo(f'Failed to load config \'{config_path}\': {err}')

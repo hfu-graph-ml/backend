@@ -1,19 +1,22 @@
+import os
 import gym
 import copy
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
-import config.config as config
-from scoring.mood_score import calculate_mood_score, valid_graph
+from config.config import config
+from scoring.mood_score import calculate_mood_score
+from scoring.valid_table_graph import valid_table_graph
+from networkx.algorithms import bipartite
 
 
 class GraphEnv(gym.Env):
   def __init__(self):
     pass
 
-  def init(self, cfg: config.Config, base_graph, dataset, reward_step_total=1):
-    self.cfg = cfg
+  def init(self, base_graph, dataset, reward_step_total=1):
+    self.config = config
     self.base_graph = base_graph
     self.graph = copy.deepcopy(self.base_graph)
     self.reward_step_total = reward_step_total
@@ -22,65 +25,71 @@ class GraphEnv(gym.Env):
 
     self.dataset = dataset
     self.num_nodes = self.base_graph.number_of_nodes()
+    self.max_edges = (((self.num_nodes * 3) - 4) / 2)
 
-    self.action_space = gym.spaces.MultiDiscrete([self.num_nodes, self.num_nodes, 2])
+    self.action_space = gym.spaces.MultiDiscrete([self.num_nodes, self.num_nodes])
     self.observation_space = gym.spaces.Dict({
         'adj': gym.spaces.Box(low=0, high=self.num_nodes, shape=(1, self.num_nodes, self.num_nodes), dtype=np.uint8),
-        'node': gym.spaces.Box(low=0, high=self.num_nodes, shape=(1, self.num_nodes, self.cfg['model']['num_node_features']), dtype=np.uint8)
+        'node': gym.spaces.Box(low=0, high=self.num_nodes, shape=(1, self.num_nodes, self.config['data']['num_node_features']), dtype=np.uint8)
     })
 
     self.level = 0  # for curriculum learning, level starts with 0, and increase afterwards
+
+    # draw graph
+    if self.config['debugging']['draw_graph']:
+      nx.draw(self.graph, with_labels=True)
+      plt.show()
 
   def step(self, action):
     # init
     info = {}  # info we care about
     self.graph_old = copy.deepcopy(self.graph)
 
-    # take action
-    self._add_edge(action)
+    # take action or not
+    edge_added = self._add_edge(action)
 
     # print actions
-    if self.cfg['debugging']['print_actions']:
+    if self.config['debugging']['print_actions']:
       print(action)
     
     # draw graph
-    if self.cfg['debugging']['draw_graph']:
+    if self.config['debugging']['draw_graph']:
       nx.draw(self.graph, with_labels=True)
       plt.show()
 
     # get observation
     ob = self.get_observation()
-    print(ob)
 
-    # read stop signal
-    stop = action[2] == 1
+    # wheter to stop after this step
+    stop = self.graph.number_of_edges() >= (((self.config['data']['num_nodes'] * 3) - 4) / 2) or self.counter >= self.config['training']['max_steps']
 
     # calculate intermediate rewards
-    # TODO: add neccessary rules for the task
-    if self.graph.number_of_edges() - self.graph_old.number_of_edges() > 0:
-      reward_step = self.reward_step_total / self.num_nodes
-      # successfully added node/edge
+    if edge_added:
+      reward_step = self.config['rewards']['step_edge_correct']
     else:
-      reward_step = -self.reward_step_total / self.num_nodes  # edge
-      self.graph = self.graph_old
-      # already exists
+      reward_step = self.config['rewards']['step_edge_incorrect']
 
     # calculate and use terminal reward
     if stop:
       new = True # end of episode
 
-      if valid_graph(self.graph):
-        # property rewards
-        reward_terminal = calculate_mood_score(self.graph)
+      if valid_table_graph(self.graph, self.num_nodes, self.max_edges):
+        reward_terminal = calculate_mood_score(self.graph) * self.config['rewards']['terminal_valid_score_multiplier']
+        
+        # draw finalized graph
+        if self.config['debugging']['draw_correct_graphs']:
+          print(reward_terminal)
+          nx.draw(self.graph, with_labels=True)
+          plt.show()
+        
       else:
-        reward_terminal = -1 # TODO: adjust this
+        reward_terminal = self.config['rewards']['terminal_invalid']
 
       reward = reward_step + reward_terminal
       # print terminal graph information
       info['final_stat'] = reward_terminal
       info['reward'] = reward
       info['stop'] = stop
-      info['graph'] = copy.deepcopy(self.graph)
 
     # use stepwise reward
     else:
@@ -91,6 +100,8 @@ class GraphEnv(gym.Env):
     if new:
       self.counter = 0
 
+    info['graph'] = copy.deepcopy(self.graph)
+    
     return ob, reward, new, info
 
   def reset(self):
@@ -108,10 +119,12 @@ class GraphEnv(gym.Env):
     :return:
     """
 
-    if self.graph.has_edge(int(action[0]), int(action[1])) or int(action[0]) == int(action[1]):
+    if self.graph.has_edge(int(action[0]), int(action[1])) or int(action[0]) == int(action[1]) or self.graph.degree(action[0]) >= 3 or self.graph.degree(action[1]) >= 3:
       return False
     else:
       self.graph.add_edge(int(action[0]), int(action[1]))
+      if not bipartite.is_bipartite(self.graph):
+        self.graph = copy.deepcopy(self.graph_old)
       return True
 
   # for graphs without features
@@ -127,6 +140,7 @@ class GraphEnv(gym.Env):
                                 for node in self.base_graph.nodes(data=True)]), axis=0)
 
     return ob
+
 
   def get_expert(self, batch_size, is_final=False, curriculum=0,
                  level_total=6, level=0):
