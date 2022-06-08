@@ -1,22 +1,27 @@
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecMonitor
 from stable_baselines3.common.utils import set_random_seed
-from callbacks.save_best_model import SaveOnBestTrainingRewardCallback
-from callbacks.config_logger import ConfigLoggerCallback
-from data.make_dataset import base_graph, dataset
+from callbacks import ConfigLoggerCallback, SaveOnBestTrainingRewardCallback
+from data import base_graph, dataset
 from envs.graph_env import GraphEnv
 from policy.feature_extractor import GCNFeaturesExtractor
 from policy.policy_network import CustomActorCriticPolicy
-from config.config import config
+from config import config
 from datetime import datetime
 import os
 import warnings
+import cProfile
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-training_id = timestamp
 
-training_id = "test_temp" # uncomment for test runs
+test_run = True
+profiling = True
+
+if test_run:
+  training_id = "test_temp"
+else:
+  training_id = timestamp
 
 # Create log dir
 model_dir = f"saved_models/{training_id}/"
@@ -43,6 +48,17 @@ policy_kwargs = dict(features_extractor_class=GCNFeaturesExtractor)
 model = PPO(CustomActorCriticPolicy, venv, policy_kwargs=policy_kwargs,
             n_steps=config["training"]["steps_per_epoch"], tensorboard_log=f"./tensorboard_logs/{training_id}", verbose=1)
 
+callback_list = [
+    SaveOnBestTrainingRewardCallback(check_freq=1000, log_dir=model_dir),
+    ConfigLoggerCallback(config)
+]
+
 # Start training
-model.learn(config["training"]["steps_per_epoch"] * config["training"]["epochs"],
-            callback=[SaveOnBestTrainingRewardCallback(check_freq=1000, log_dir=model_dir), ConfigLoggerCallback(config)])
+if profiling:
+  with cProfile.Profile() as pr:
+    model.learn(config["training"]["steps_per_epoch"] * 10, callback=callback_list)
+    profiling_stats_dir = "profiling_stats"
+    os.makedirs(profiling_stats_dir, exist_ok=True)
+    pr.dump_stats(profiling_stats_dir + "/stats.profile")
+else:
+  model.learn(config["training"]["steps_per_epoch"] * config["training"]["epochs"], callback=callback_list)

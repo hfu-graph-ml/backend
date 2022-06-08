@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import networkx as nx
-from data.make_dataset import base_graph, dataset
+from data import base_graph, dataset
 from envs.graph_env import GraphEnv
-from config.config import config
+from config import config
 from stable_baselines3 import PPO
 import warnings
 

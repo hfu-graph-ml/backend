@@ -5,7 +5,7 @@ import torch.nn as nn
 from stable_baselines3 import PPO
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
 
-from config.config import config
+from config import config
 
 
 class GCNFeaturesExtractor(BaseFeaturesExtractor):

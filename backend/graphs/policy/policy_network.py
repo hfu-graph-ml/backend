@@ -5,7 +5,7 @@ import gym
 import torch as th
 from torch import nn
 
-from config.config import config
+from config import config
 
 from stable_baselines3.common.policies import ActorCriticPolicy
 

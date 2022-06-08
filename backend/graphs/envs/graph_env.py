@@ -6,9 +6,8 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from config.config import config
-from scoring.mood_score import calculate_mood_score
-from scoring.valid_table_graph import valid_table_graph
+from config import config
+from evaluation import valid_table_graph, calculate_mood_score
 
 class GraphEnv(gym.Env):
   def __init__(self):
