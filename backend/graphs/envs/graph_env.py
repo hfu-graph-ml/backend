@@ -1,3 +1,4 @@
+import imp
 import os
 import gym
 import copy
@@ -8,8 +9,6 @@ import matplotlib.pyplot as plt
 from config.config import config
 from scoring.mood_score import calculate_mood_score
 from scoring.valid_table_graph import valid_table_graph
-from networkx.algorithms import bipartite
-
 
 class GraphEnv(gym.Env):
   def __init__(self):
@@ -123,8 +122,9 @@ class GraphEnv(gym.Env):
       return False
     else:
       self.graph.add_edge(int(action[0]), int(action[1]))
-      if not bipartite.is_bipartite(self.graph):
+      if not nx.is_bipartite(self.graph):
         self.graph = copy.deepcopy(self.graph_old)
+        return False
       return True
 
   # for graphs without features

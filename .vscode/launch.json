@@ -13,6 +13,15 @@
             "justMyCode": false
         },
         {
+            "name": "Train Model with profiler",
+            "type": "python",
+            "request": "launch",
+            "module": "cProfile",
+            "args": [
+                "-o", "/tmp/tmp.prof", "backend/graphs/train.py"
+            ]
+        },
+        {
             "name": "Test Model",
             "type": "python",
             "request": "launch",

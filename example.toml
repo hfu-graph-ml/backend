@@ -9,13 +9,13 @@ layer_num_g = 4
 [training]
 max_steps = 100
 steps_per_epoch = 1000
-epochs = 1e6
+epochs = 1e7
 
 [rewards]
-step_edge_correct = 1.0
-step_edge_incorrect = -1.0
+step_edge_correct = 0.5
+step_edge_incorrect = -0.5
 terminal_valid_score_multiplier = 20.0
-terminal_invalid = -0.0
+terminal_invalid = -20.0
 
 [debugging]
 draw_graph = false
