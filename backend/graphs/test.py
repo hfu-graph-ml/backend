@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import networkx as nx
-from data import base_graph, dataset
+from data import base_graph
 from envs.graph_env import GraphEnv
 from config import config
 from stable_baselines3 import PPO
@@ -11,7 +11,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 # Init gym graph environment
 env = GraphEnv()
-env.init(base_graph=base_graph, dataset=dataset)
+env.init(base_graph=base_graph)
 env.seed(101)
 
 # Load model

@@ -2,7 +2,7 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv, VecMonitor
 from stable_baselines3.common.utils import set_random_seed
 from callbacks import ConfigLoggerCallback, SaveOnBestTrainingRewardCallback, LogValidActions, LogValidGraphs, LogMoodScores, LogBestGraph
-from data import base_graph, dataset
+from data import base_graph
 from envs.graph_env import GraphEnv
 from policy.feature_extractor import GCNFeaturesExtractor
 from policy.policy_network import CustomActorCriticPolicy
@@ -13,9 +13,12 @@ import warnings
 import cProfile
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
 test_run = False
-profiling = True
+profiling = False
+num_profiling_epochs = 100
+
+timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 if test_run:
   log_dir = None
@@ -30,7 +33,7 @@ else:
 def make_env(rank, seed=0):
   def _init():
     env = GraphEnv()
-    env.init(base_graph=base_graph, dataset=dataset)
+    env.init(base_graph=base_graph)
     env.seed(seed + rank)
     return env
   set_random_seed(seed)
@@ -63,7 +66,7 @@ else:
 if profiling:
   with cProfile.Profile() as pr:
     model.learn(config["training"]["steps_per_epoch"] * config["training"]
-                ["num_training_envs"] * 100, callback=callback_list)
+                ["num_training_envs"] * num_profiling_epochs, callback=callback_list)
     profiling_stats_dir = "profiling_stats"
     os.makedirs(profiling_stats_dir, exist_ok=True)
     pr.dump_stats(profiling_stats_dir + "/stats.profile")

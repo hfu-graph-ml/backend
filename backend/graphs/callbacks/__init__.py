@@ -43,7 +43,7 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
   :param verbose: Verbosity level.
   """
 
-  def __init__(self, log_dir: str, check_freq: int = config["training"]["steps_per_epoch"] * config["training"]["num_training_envs"], verbose: int = 1):
+  def __init__(self, log_dir: str, check_freq: int = config["training"]["steps_per_epoch"], verbose: int = 1):
     super(SaveOnBestTrainingRewardCallback, self).__init__(verbose)
     self.check_freq = check_freq
     self.log_dir = log_dir
@@ -79,7 +79,7 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
 
 
 class LogValidActions(BaseCallback):
-  def __init__(self, check_freq: int = config["training"]["steps_per_epoch"] * config["training"]["num_training_envs"]):
+  def __init__(self, check_freq: int = config["training"]["steps_per_epoch"]):
     super(LogValidActions, self).__init__()
     self.check_freq = check_freq
     self.valid_actions = []
@@ -97,7 +97,7 @@ class LogValidActions(BaseCallback):
 
 
 class LogValidGraphs(BaseCallback):
-  def __init__(self, check_freq: int = config["training"]["steps_per_epoch"] * config["training"]["num_training_envs"]):
+  def __init__(self, check_freq: int = config["training"]["steps_per_epoch"]):
     super(LogValidGraphs, self).__init__()
     self.check_freq = check_freq
     self.valid_graphs = []
@@ -115,7 +115,7 @@ class LogValidGraphs(BaseCallback):
 
 
 class LogMoodScores(BaseCallback):
-  def __init__(self, check_freq: int = config["training"]["steps_per_epoch"] * config["training"]["num_training_envs"]):
+  def __init__(self, check_freq: int = config["training"]["steps_per_epoch"]):
     super(LogMoodScores, self).__init__()
     self.check_freq = check_freq
     self.mood_scores = []
@@ -133,7 +133,7 @@ class LogMoodScores(BaseCallback):
 
 
 class LogBestGraph(BaseCallback):
-  def __init__(self, check_freq: int = config["training"]["steps_per_epoch"] * config["training"]["num_training_envs"]):
+  def __init__(self, check_freq: int = config["training"]["steps_per_epoch"]):
     super(LogBestGraph, self).__init__()
     self.check_freq = check_freq
     self.higest_mood_score = 0

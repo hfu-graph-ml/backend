@@ -1,6 +1,6 @@
 [data]
 num_nodes = 6
-num_node_features = 2
+num_node_features = 4
 
 [model]
 emb_size = 8
@@ -8,7 +8,7 @@ layer_num_g = 4
 
 [training]
 max_steps = 100
-steps_per_epoch = 100
+steps_per_epoch = 1000
 num_training_envs = 4
 batch_size = 80 # batch_size that is a factor of steps_per_epoch * num_training_envs is recommended
 epochs = 1e7

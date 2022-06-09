@@ -7,13 +7,13 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 from config import config
-from evaluation import valid_table_graph, calculate_mood_score
+from evaluation import valid_table_graph, calculate_mood_scores, highest_possible_edge_mood_score
 
 class GraphEnv(gym.Env):
   def __init__(self):
     pass
 
-  def init(self, base_graph, dataset, reward_step_total=1):
+  def init(self, base_graph, reward_step_total=1):
     self.config = config
     self.base_graph = base_graph
     self.graph = copy.deepcopy(self.base_graph)
@@ -21,7 +21,6 @@ class GraphEnv(gym.Env):
 
     self.counter = 0
 
-    self.dataset = dataset
     self.num_nodes = self.base_graph.number_of_nodes()
     self.max_edges = (((self.num_nodes * 3) - 4) / 2)
 
@@ -43,7 +42,7 @@ class GraphEnv(gym.Env):
     info = {}  # info we care about
 
     graph_is_valid = None
-    mood_score = np.nan
+    mood_scores = []
 
     # take action or not
     edge_added = self._add_edge(action)
@@ -76,8 +75,8 @@ class GraphEnv(gym.Env):
       graph_is_valid = valid_table_graph(self.graph, self.num_nodes, self.max_edges)
 
       if graph_is_valid:
-        mood_score = calculate_mood_score(self.graph) * self.config['rewards']['terminal_valid_score_multiplier']
-        reward_terminal = mood_score
+        mood_scores = calculate_mood_scores(self.graph)
+        reward_terminal = (highest_possible_edge_mood_score - np.mean(mood_scores)) / highest_possible_edge_mood_score * self.config['rewards']['terminal_valid_score_multiplier']
         
         # draw finalized graph
         if self.config['debugging']['draw_correct_graphs']:
@@ -106,7 +105,7 @@ class GraphEnv(gym.Env):
     info['graph'] = self.graph
     info['action_valid'] = int(edge_added)
     info['graph_valid'] = int(graph_is_valid) if graph_is_valid != None else -np.inf
-    info['mood_score'] = mood_score
+    info['mood_score'] = np.sum(mood_scores) if len(mood_scores) > 0 else np.nan
     
     return ob, reward, new, info
 
@@ -116,7 +115,7 @@ class GraphEnv(gym.Env):
     ob = self.get_observation()
     return ob
 
-  def render(self, mode='human'):
+  def render(self):
     return
 
   def _add_edge(self, action):
@@ -135,7 +134,6 @@ class GraphEnv(gym.Env):
         return False
       return True
 
-  # for graphs without features
   def get_observation(self):
     """
     :return: ob, where ob['adj'] is E with dim 1 x n x n and ob['node']
