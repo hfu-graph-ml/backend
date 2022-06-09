@@ -1,18 +1,10 @@
+import matplotlib.pyplot as plt
 import networkx as nx
+import numpy as np
+
 from data import all_nodes
-from evaluation import calculate_mood_scores_from_graph
-
-score_color_map = {
-    0.0: "#f1464c",
-    0.5: "#f1464c",
-    1.0: "#ffb56b",
-    1.5: "#ffb56b",
-    2.0: "#d7dd3c",
-    2.5: "#d7dd3c",
-    3.0: "#60d394",
-    3.5: "#60d394",
-}
-
+from data.edge_score_matrix import get_edge_scores
+from utils.colors import score_color_map
 
 def get_draw_graph_options(edge_scores=None):
   draw_graph_options = dict(
@@ -30,8 +22,15 @@ def get_draw_graph_options(edge_scores=None):
   return draw_graph_options
 
 
-def draw_graph(graph, layout="spectral"):
+def draw_graph(graph, layout="spectral", show_graph=True):
   pos = None
   if layout == "spectral":
     pos = nx.spectral_layout(graph)
-  nx.draw(graph, pos=pos, **get_draw_graph_options(edge_scores=calculate_mood_scores_from_graph(graph)))
+
+  mood_scores = get_edge_scores(graph.edges())
+  nx.draw(graph, pos=pos, **get_draw_graph_options(edge_scores=mood_scores))
+  fig = plt.gcf()
+  fig.suptitle(f"Mood Score: {np.sum(mood_scores):.2f}", fontsize=12)
+
+  if show_graph:
+    plt.show()

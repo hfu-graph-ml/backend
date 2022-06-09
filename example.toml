@@ -21,6 +21,6 @@ terminal_invalid = -20.0
 
 [debugging]
 draw_graph = false
-draw_correct_graphs = true
+draw_correct_graphs = false
 print_actions = false
 print_extracted_features = false

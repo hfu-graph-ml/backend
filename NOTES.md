@@ -1,14 +1,18 @@
 # TODOs
-- implement "complete graph" function for api to call
-  - params: graph (nodes & existing edges), id of model to use, number of graph samples/completions to do
-  - returns: edge list and score for each generated valid graph
-- scale data (more nodes to draw from)
+- compute edge score matrix (and use to look up values instead)
+- prepare saving unique generated graphs as images
+- scale training data (randomly generate more nodes to draw from)
 - use git commit hash in model id to associate trained models with its codebase
 - some form of changelog / training documentation
 - extend config
 - -> start training with all nodes and features
 - maybe use hyperopt?
 - improve code structure and add explaining comments for next project group
+
+# Notes
+- failing in completing some pre-connected graphs:
+  - (3, 4)
+  - (3, 4), (1, 3)
 
 # Commands
 - `tensorboard --logdir ./tensorboard_logs`

@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 from utils import draw_graph
 
 from config import config
-from evaluation import valid_table_graph, calculate_mood_scores_from_graph, highest_possible_edge_mood_score
+from evaluation import valid_table_graph, highest_possible_edge_mood_score
+from data.edge_score_matrix import get_edge_scores
 
 
 class GraphEnv(gym.Env):
@@ -37,7 +38,6 @@ class GraphEnv(gym.Env):
     # draw graph
     if self.config['debugging']['draw_graph']:
       draw_graph(self.graph, layout=None)
-      plt.show()
 
   def step(self, action):
     # init
@@ -56,7 +56,6 @@ class GraphEnv(gym.Env):
     # draw graph
     if self.config['debugging']['draw_graph']:
       draw_graph(self.graph, layout=None)
-      plt.show()
 
     # get observation
     ob = self.get_observation()
@@ -78,7 +77,7 @@ class GraphEnv(gym.Env):
       graph_is_valid = valid_table_graph(self.graph, self.num_nodes, self.max_edges)
 
       if graph_is_valid:
-        mood_scores = calculate_mood_scores_from_graph(self.graph)
+        mood_scores = get_edge_scores(self.graph.edges())
         reward_terminal = (highest_possible_edge_mood_score - np.mean(mood_scores)) / \
             highest_possible_edge_mood_score * self.config['rewards']['terminal_valid_score_multiplier']
 
@@ -86,7 +85,6 @@ class GraphEnv(gym.Env):
         if self.config['debugging']['draw_correct_graphs']:
           print(reward_terminal)
           draw_graph(self.graph)
-          plt.show()
 
       else:
         reward_terminal = self.config['rewards']['terminal_invalid']

@@ -10,15 +10,32 @@ def valid_table_graph(graph, num_nodes, max_edges):
 
   return correct_number_of_edges and correct_degree_histogram and graph_is_bipartite
 
+
 highest_possible_edge_mood_score = 3.5
 
-def calculate_mood_scores_from_graph(graph):
-  edge_scores = []
 
-  for edge in graph.edges():
-    edge_scores.append(calculate_mood_score(graph.nodes[edge[0]], graph.nodes[edge[1]]))
+def calculate_edge_score_matrix(nodes):
+  edge_score_matrix = np.zeros((len(nodes), len(nodes)))
 
-  return edge_scores
+  for n in range(edge_score_matrix.shape[0]):
+    for m in range(edge_score_matrix.shape[1]):
+      edge_score_matrix[n][m] = calculate_mood_score(
+          dict(
+              age=nodes[n][0],
+              country=nodes[n][1],
+              drinker=nodes[n][2],
+              relationship=nodes[n][3]
+          ),
+          dict(
+              age=nodes[m][0],
+              country=nodes[m][1],
+              drinker=nodes[m][2],
+              relationship=nodes[m][3]
+          )
+      )
+
+  return edge_score_matrix
+
 
 def calculate_mood_score(edge_1, edge_2):
   edge_score_age = calculate_age_score(edge_1["age"], edge_2["age"])

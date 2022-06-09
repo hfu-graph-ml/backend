@@ -160,9 +160,7 @@ class LogBestGraph(BaseCallback):
       self.logger.record('rollout/higest_mood_score', self.higest_mood_score)
 
       if self.got_new_higest_mood_score:
-        draw_graph(self.higest_mood_score_graph)
-        fig = plt.gcf()
-        fig.suptitle(f"Mood Score: {self.higest_mood_score:.2f}", fontsize=12)
+        fig = draw_graph(self.higest_mood_score_graph, show_graph=False)
         self.logger.record("graphs/higest_mood_score_graph", Figure(fig, close=True), exclude=("stdout", "log", "json", "csv"))
         graph_edge_list_string = ""
         for edge in edgelist.generate_edgelist(self.higest_mood_score_graph, delimiter=", ", data=False):
