@@ -3,6 +3,7 @@ import networkx as nx
 from data import base_graph
 from envs.graph_env import GraphEnv
 from config import config
+from utils import draw_graph
 from stable_baselines3 import PPO
 import warnings
 
@@ -28,7 +29,7 @@ for i in range(10):
     obs, rewards, done, info = env.step(action)
     if done:
       print(info["final_stat"])
-      nx.draw(info["graph"], with_labels=True)
+      draw_graph(info["graph"])
       plt.show()
       generated_graphs.append((info["final_stat"], info["graph"]))
 

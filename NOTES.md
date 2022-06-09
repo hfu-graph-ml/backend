@@ -1,5 +1,7 @@
 # TODOs
-- scale features and rewrite mood_score
+- implement "complete graph" function for api to call
+  - params: graph (nodes & existing edges), id of model to use, number of graph samples/completions to do
+  - returns: edge list and score for each generated valid graph
 - scale data (more nodes to draw from)
 - use git commit hash in model id to associate trained models with its codebase
 - some form of changelog / training documentation

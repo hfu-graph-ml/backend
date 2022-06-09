@@ -5,9 +5,11 @@ import copy
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+from utils import draw_graph
 
 from config import config
-from evaluation import valid_table_graph, calculate_mood_scores, highest_possible_edge_mood_score
+from evaluation import valid_table_graph, calculate_mood_scores_from_graph, highest_possible_edge_mood_score
+
 
 class GraphEnv(gym.Env):
   def __init__(self):
@@ -34,7 +36,7 @@ class GraphEnv(gym.Env):
 
     # draw graph
     if self.config['debugging']['draw_graph']:
-      nx.draw(self.graph, with_labels=True)
+      draw_graph(self.graph, layout=None)
       plt.show()
 
   def step(self, action):
@@ -50,17 +52,18 @@ class GraphEnv(gym.Env):
     # print actions
     if self.config['debugging']['print_actions']:
       print(action)
-    
+
     # draw graph
     if self.config['debugging']['draw_graph']:
-      nx.draw(self.graph, with_labels=True)
+      draw_graph(self.graph, layout=None)
       plt.show()
 
     # get observation
     ob = self.get_observation()
 
     # wheter to stop after this step
-    stop = self.graph.number_of_edges() >= (((self.config['data']['num_nodes'] * 3) - 4) / 2) or self.counter >= self.config['training']['max_steps']
+    stop = self.graph.number_of_edges() >= (
+        ((self.config['data']['num_nodes'] * 3) - 4) / 2) or self.counter >= self.config['training']['max_steps']
 
     # calculate intermediate rewards
     if edge_added:
@@ -70,20 +73,21 @@ class GraphEnv(gym.Env):
 
     # calculate and use terminal reward
     if stop:
-      new = True # end of episode
+      new = True  # end of episode
 
       graph_is_valid = valid_table_graph(self.graph, self.num_nodes, self.max_edges)
 
       if graph_is_valid:
-        mood_scores = calculate_mood_scores(self.graph)
-        reward_terminal = (highest_possible_edge_mood_score - np.mean(mood_scores)) / highest_possible_edge_mood_score * self.config['rewards']['terminal_valid_score_multiplier']
-        
+        mood_scores = calculate_mood_scores_from_graph(self.graph)
+        reward_terminal = (highest_possible_edge_mood_score - np.mean(mood_scores)) / \
+            highest_possible_edge_mood_score * self.config['rewards']['terminal_valid_score_multiplier']
+
         # draw finalized graph
         if self.config['debugging']['draw_correct_graphs']:
           print(reward_terminal)
-          nx.draw(self.graph, with_labels=True)
+          draw_graph(self.graph)
           plt.show()
-        
+
       else:
         reward_terminal = self.config['rewards']['terminal_invalid']
 
@@ -106,7 +110,7 @@ class GraphEnv(gym.Env):
     info['action_valid'] = int(edge_added)
     info['graph_valid'] = int(graph_is_valid) if graph_is_valid != None else -np.inf
     info['mood_score'] = np.sum(mood_scores) if len(mood_scores) > 0 else np.nan
-    
+
     return ob, reward, new, info
 
   def reset(self):

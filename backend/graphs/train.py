@@ -14,7 +14,7 @@ import cProfile
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-test_run = False
+test_run = True
 profiling = False
 num_profiling_epochs = 100
 

@@ -11,6 +11,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.logger import TensorBoardOutputFormat, Figure
 
 from config import config
+from utils import draw_graph
 
 
 class ConfigLoggerCallback(BaseCallback):
@@ -159,7 +160,7 @@ class LogBestGraph(BaseCallback):
       self.logger.record('rollout/higest_mood_score', self.higest_mood_score)
 
       if self.got_new_higest_mood_score:
-        nx.draw(self.higest_mood_score_graph, with_labels=True)
+        draw_graph(self.higest_mood_score_graph)
         fig = plt.gcf()
         fig.suptitle(f"Mood Score: {self.higest_mood_score:.2f}", fontsize=12)
         self.logger.record("graphs/higest_mood_score_graph", Figure(fig, close=True), exclude=("stdout", "log", "json", "csv"))

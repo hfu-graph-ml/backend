@@ -12,18 +12,21 @@ def valid_table_graph(graph, num_nodes, max_edges):
 
 highest_possible_edge_mood_score = 3.5
 
-def calculate_mood_scores(graph):
+def calculate_mood_scores_from_graph(graph):
   edge_scores = []
 
   for edge in graph.edges():
-    edge_score_age = calculate_age_score(graph.nodes[edge[0]]["age"], graph.nodes[edge[1]]["age"])
-    edge_score_country = calculate_country_score(graph.nodes[edge[0]]["country"], graph.nodes[edge[1]]["country"])
-    edge_score_drinker = calculate_drinker_score(graph.nodes[edge[0]]["drinker"], graph.nodes[edge[1]]["drinker"])
-    a = (graph.nodes[edge[0]]["relationship"], graph.nodes[edge[1]]["relationship"])
-    edge_score_relationship = calculate_relationship_score(graph.nodes[edge[0]]["relationship"], graph.nodes[edge[1]]["relationship"])
-    edge_scores.append([edge_score_age, edge_score_country, edge_score_drinker, edge_score_relationship])
+    edge_scores.append(calculate_mood_score(graph.nodes[edge[0]], graph.nodes[edge[1]]))
 
-  return np.sum(edge_scores, axis=1)
+  return edge_scores
+
+def calculate_mood_score(edge_1, edge_2):
+  edge_score_age = calculate_age_score(edge_1["age"], edge_2["age"])
+  edge_score_country = calculate_country_score(edge_1["country"], edge_2["country"])
+  edge_score_drinker = calculate_drinker_score(edge_1["drinker"], edge_2["drinker"])
+  edge_score_relationship = calculate_relationship_score(edge_1["relationship"], edge_2["relationship"])
+
+  return np.sum([edge_score_age, edge_score_country, edge_score_drinker, edge_score_relationship])
 
 
 def calculate_age_score(age_1: int, age_2: int) -> float:
