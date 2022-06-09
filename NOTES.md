@@ -1,18 +1,9 @@
 # TODOs
-- node embedding 0 when nodes are isolated at beginning
-- valuenet / critic design
-- pretrain critic
-
-# Future Improvements
-- add more metrics to tensorboard
-  - valid action ratio
-  - valid table ratio
-  - mood score
-  - some graph plots/figures
-- extend config
+- scale features and rewrite mood_score
+- scale data (more nodes to draw from)
 - use git commit hash in model id to associate trained models with its codebase
 - some form of changelog / training documentation
-- use profiler for training speed improvements
+- extend config
 - -> start training with all nodes and features
 - maybe use hyperopt?
 - improve code structure and add explaining comments for next project group

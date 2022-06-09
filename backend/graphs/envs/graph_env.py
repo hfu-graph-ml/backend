@@ -41,7 +41,9 @@ class GraphEnv(gym.Env):
   def step(self, action):
     # init
     info = {}  # info we care about
-    self.graph_old = copy.deepcopy(self.graph)
+
+    graph_is_valid = None
+    mood_score = np.nan
 
     # take action or not
     edge_added = self._add_edge(action)
@@ -71,8 +73,11 @@ class GraphEnv(gym.Env):
     if stop:
       new = True # end of episode
 
-      if valid_table_graph(self.graph, self.num_nodes, self.max_edges):
-        reward_terminal = calculate_mood_score(self.graph) * self.config['rewards']['terminal_valid_score_multiplier']
+      graph_is_valid = valid_table_graph(self.graph, self.num_nodes, self.max_edges)
+
+      if graph_is_valid:
+        mood_score = calculate_mood_score(self.graph) * self.config['rewards']['terminal_valid_score_multiplier']
+        reward_terminal = mood_score
         
         # draw finalized graph
         if self.config['debugging']['draw_correct_graphs']:
@@ -98,7 +103,10 @@ class GraphEnv(gym.Env):
     if new:
       self.counter = 0
 
-    info['graph'] = copy.deepcopy(self.graph)
+    info['graph'] = self.graph
+    info['action_valid'] = int(edge_added)
+    info['graph_valid'] = int(graph_is_valid) if graph_is_valid != None else -np.inf
+    info['mood_score'] = mood_score
     
     return ob, reward, new, info
 
@@ -120,14 +128,15 @@ class GraphEnv(gym.Env):
     if self.graph.has_edge(int(action[0]), int(action[1])) or int(action[0]) == int(action[1]) or self.graph.degree(action[0]) >= 3 or self.graph.degree(action[1]) >= 3:
       return False
     else:
+      graph_old = copy.deepcopy(self.graph)
       self.graph.add_edge(int(action[0]), int(action[1]))
       if not nx.is_bipartite(self.graph):
-        self.graph = copy.deepcopy(self.graph_old)
+        self.graph = graph_old
         return False
       return True
 
   # for graphs without features
-  def get_observation(self, feature='deg'):
+  def get_observation(self):
     """
     :return: ob, where ob['adj'] is E with dim 1 x n x n and ob['node']
     is F with dim 1 x n x m.
@@ -139,87 +148,3 @@ class GraphEnv(gym.Env):
                                 for node in self.base_graph.nodes(data=True)]), axis=0)
 
     return ob
-
-
-  def get_expert(self, batch_size, is_final=False, curriculum=0,
-                 level_total=6, level=0):
-
-    ac = np.zeros((batch_size, 3))
-
-    # TODO: finish get_expert
-    print('get_expert()')
-
-    # select graph
-    dataset_len = len(self.dataset)
-    for i in range(batch_size):
-      # get a subgraph
-      if curriculum == 1:
-        ratio_start = level / float(level_total)
-        ratio_end = (level + 1) / float(level_total)
-        idx = np.random.randint(int(ratio_start * dataset_len),
-                                int(ratio_end * dataset_len))
-      else:
-        idx = np.random.randint(0, dataset_len)
-      graph = self.dataset[idx]
-      edges = graph.edges()
-      # select the edge num for the subgraph
-      if is_final:
-        edges_sub_len = len(edges)
-      else:
-        edges_sub_len = random.randint(1, len(edges))
-      edges_sub = random.sample(edges, k=edges_sub_len)
-      graph_sub = nx.Graph(edges_sub)
-      graph_sub = max(nx.connected_component_subgraphs(graph_sub),
-                      key=len)
-      if is_final:  # when the subgraph the whole graph, the expert show
-        # stop sign
-        node1 = random.randint(0, graph.number_of_nodes() - 1)
-        while True:
-          node2 = random.randint(0, graph.number_of_nodes())
-          if node2 != node1:
-            break
-        edge_type = 0
-        ac[i, :] = [node1, node2, edge_type, 1]  # stop
-      else:
-        # random pick an edge from the subgraph, then remove it
-        edge_sample = random.sample(graph_sub.edges(), k=1)
-        graph_sub.remove_edges_from(edge_sample)
-        graph_sub = max(nx.connected_component_subgraphs(graph_sub),
-                        key=len)
-        edge_sample = edge_sample[0]  # get value
-        # get action
-        if edge_sample[0] in graph_sub.nodes() and edge_sample[
-                1] in graph_sub.nodes():
-          node1 = graph_sub.nodes().index(edge_sample[0])
-          node2 = graph_sub.nodes().index(edge_sample[1])
-        elif edge_sample[0] in graph_sub.nodes():
-          node1 = graph_sub.nodes().index(edge_sample[0])
-          node2 = graph_sub.number_of_nodes()
-        elif edge_sample[1] in graph_sub.nodes():
-          node1 = graph_sub.nodes().index(edge_sample[1])
-          node2 = graph_sub.number_of_nodes()
-        else:
-          print('Expert policy error!')
-        edge_type = 0
-        ac[i, :] = [node1, node2, edge_type, 0]  # don't stop
-        # print('action',[node1,node2,edge_type,0])
-      # print('action',ac)
-      # plt.axis("off")
-      # nx.draw_networkx(graph_sub)
-      # plt.show()
-      # get observation
-      n = graph_sub.number_of_nodes()
-      F = np.zeros((1, self.num_nodes, 1))
-      F[0, :n + 1, 0] = 1
-      if self.is_normalize:
-        ob['adj'][i] = self.normalize_adj(F)
-      else:
-        ob['node'][i] = F
-      # print(F)
-      E = np.zeros((1, self.num_nodes, self.num_nodes))
-      E[0, :n, :n] = np.asarray(nx.to_numpy_matrix(graph_sub))[np.newaxis, :, :]
-      E[0, :n + 1, :n + 1] += np.eye(n + 1)
-      ob['adj'][i] = E
-      # print(E)
-
-    return ob, ac

@@ -18,7 +18,10 @@ class ModelOptions(TypedDict):
     layer_num_g: int
 
 class TrainingOptions(TypedDict):
+    max_steps: int
     steps_per_epoch: int
+    num_training_envs: int
+    batch_size: int
     epochs: int
 
 class RewardsOptions(TypedDict):
@@ -42,7 +45,7 @@ class Config(TypedDict):
     debugging: DebuggingOptions
 
 
-def read(path: str, auto_validate: bool = False) -> Tuple[Config, Error]:
+def read(path: str) -> Tuple[Config, Error]:
     '''
     Read a TOML file at 'path' and return a new Config class.
 
@@ -66,31 +69,9 @@ def read(path: str, auto_validate: bool = False) -> Tuple[Config, Error]:
 
     try:
         config = toml.load(path, Config)
-
-        if not auto_validate:
-            return config, None
-
-        return config, validate(config)
+        return config, None
     except toml.TomlDecodeError:
         return None, Error('TOML decode error')
-
-
-def validate(cfg: Config) -> Error:
-    '''
-    Validate config values. Returns an error if validation failed.
-
-    Parameters
-    ----------
-    cfg : Config
-        Config to validate
-
-    Returns
-    -------
-    err : Error
-        Non None if validation failed
-    '''
-
-    return None
 
 # Load config
 config_path = 'example.toml'

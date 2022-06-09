@@ -15,7 +15,7 @@ env.init(base_graph=base_graph, dataset=dataset)
 env.seed(101)
 
 # Load model
-model_id = "2022-06-07_08-51-24"
+model_id = "test_temp"
 model = PPO.load(f"saved_models/{model_id}/best_model.zip", env=env)
 
 # Start generating 10 graphs
