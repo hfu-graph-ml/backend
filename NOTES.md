@@ -9,8 +9,13 @@
 - maybe use hyperopt?
 - improve code structure and add explaining comments for next project group
 
+- fix sampled node ids
+- layer num too large?
+- debug & verify node embeddings, ...
+- optimize mood score rewards (normalize between max and min possible score)
+
 # Notes
-- failing in completing some pre-connected graphs:
+- failing in completing some pre-connected graphs (model 2022-06-09_14-21-02):
   - (3, 4)
   - (3, 4), (1, 3)
 

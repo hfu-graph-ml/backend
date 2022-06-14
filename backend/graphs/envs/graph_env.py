@@ -145,6 +145,6 @@ class GraphEnv(gym.Env):
     ob = {}
     ob['adj'] = np.expand_dims(nx.adjacency_matrix(self.graph).todense(), axis=0)
     ob['node'] = np.expand_dims(np.array([[feature for feature in node[1].values()]
-                                for node in self.base_graph.nodes(data=True)]), axis=0)
+                                for node in self.graph.nodes(data=True)]), axis=0)
 
     return ob

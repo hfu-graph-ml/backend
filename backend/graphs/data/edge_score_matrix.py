@@ -19,7 +19,7 @@ ax.set_yticks(range(len(name_list)), labels=name_list)
 for (i, j), z in np.ndenumerate(edge_score_matrix):
   ax.text(j, i, '{:0.1f}'.format(z), ha='center', va='center')
 fig = plt.gcf()
-fig.savefig('backend/graphs/data/edge_score_matrix.png')
+fig.savefig('backend/graphs/data/edge_score_matrix.png', dpi=480)
 plt.close()
 
 df = pd.DataFrame()
