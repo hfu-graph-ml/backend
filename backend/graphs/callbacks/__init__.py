@@ -1,3 +1,4 @@
+from cmath import isnan
 import os
 import json
 import copy
@@ -137,9 +138,10 @@ class LogBestGraph(BaseCallback):
   def __init__(self, check_freq: int = config["training"]["steps_per_epoch"]):
     super(LogBestGraph, self).__init__()
     self.check_freq = check_freq
-    self.higest_mood_score = 0
-    self.got_new_higest_mood_score = False
-    self.higest_mood_score_graph = None
+    self.highest_mood_score = None
+    self.lowest_mood_score = None
+    self.got_new_highest_mood_score = False
+    self.highest_mood_score_graph = None
     self.tb_formatter = None
 
   def _on_training_start(self) -> bool:
@@ -149,25 +151,34 @@ class LogBestGraph(BaseCallback):
 
   def _on_step(self) -> bool:
     mood_scores = [x["mood_score"] for x in self.locals["infos"]]
-    higest_mood_score_index = np.argmax(np.nan_to_num(mood_scores))
-    higest_mood_score = mood_scores[higest_mood_score_index]
-    if higest_mood_score > self.higest_mood_score:
-      self.higest_mood_score = higest_mood_score
-      self.higest_mood_score_graph = copy.deepcopy(self.locals["infos"][higest_mood_score_index]["graph"])
-      self.got_new_higest_mood_score = True
+
+    highest_mood_score_index = np.argmax(np.nan_to_num(mood_scores))
+    highest_mood_score = mood_scores[highest_mood_score_index]
+    if not isnan(highest_mood_score) and (self.highest_mood_score == None or highest_mood_score > self.highest_mood_score):
+      self.highest_mood_score = highest_mood_score
+      self.highest_mood_score_graph = copy.deepcopy(self.locals["infos"][highest_mood_score_index]["graph"])
+      self.got_new_highest_mood_score = True
+    
+    
+    lowest_mood_score_index = np.argmin(np.nan_to_num(mood_scores, nan=1000))
+    lowest_mood_score = mood_scores[lowest_mood_score_index]
+    if not isnan(lowest_mood_score) and (self.lowest_mood_score == None or lowest_mood_score < self.lowest_mood_score):
+      self.lowest_mood_score = lowest_mood_score
+
 
     if self.n_calls % self.check_freq == 0:
-      self.logger.record('rollout/higest_mood_score', self.higest_mood_score)
+      self.logger.record('rollout/highest_mood_score', self.highest_mood_score)
+      self.logger.record('rollout/lowest_mood_score', self.lowest_mood_score)
 
-      if self.got_new_higest_mood_score:
-        fig = draw_graph(self.higest_mood_score_graph, show_graph=False)
-        self.logger.record("graphs/higest_mood_score_graph", Figure(fig, close=True), exclude=("stdout", "log", "json", "csv"))
+      if self.got_new_highest_mood_score:
+        fig = draw_graph(self.highest_mood_score_graph, show_graph=False)
+        self.logger.record("graphs/highest_mood_score_graph", Figure(fig, close=True), exclude=("stdout", "log", "json", "csv"))
         graph_edge_list_string = ""
-        for edge in edgelist.generate_edgelist(self.higest_mood_score_graph, delimiter=", ", data=False):
+        for edge in edgelist.generate_edgelist(self.highest_mood_score_graph, delimiter=", ", data=False):
           graph_edge_list_string = graph_edge_list_string + f"({edge}),&nbsp;"
         graph_edge_list_string = graph_edge_list_string[:-7]
-        self.tb_formatter.writer.add_text("graphs/higest_mood_score_graph", graph_edge_list_string, self.num_timesteps)
+        self.tb_formatter.writer.add_text("graphs/highest_mood_score_graph", graph_edge_list_string, self.num_timesteps)
         self.tb_formatter.writer.flush()
-        self.got_new_higest_mood_score = False
+        self.got_new_highest_mood_score = False
 
     return True

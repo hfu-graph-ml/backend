@@ -85,13 +85,14 @@ for node in all_nodes:
 
 # draw people from all
 base_graph = nx.Graph()
-for sample in random.sample(list(enumerate(all_nodes_features)), k=config['data']['num_nodes']):
+for sample in random.sample(all_nodes, k=config['data']['num_nodes']):
+  node_id = sample[0]
   base_graph.add_node(
-      sample[0],
-      age=sample[1][0],
-      country=sample[1][1],
-      drinker=sample[1][2],
-      relationship=sample[1][3]
+      node_id,
+      age=all_nodes_features[node_id][0],
+      country=all_nodes_features[node_id][1],
+      drinker=all_nodes_features[node_id][2],
+      relationship=all_nodes_features[node_id][3]
   )
 
 # print(base_graph.nodes(data=True))

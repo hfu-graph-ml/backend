@@ -34,3 +34,5 @@ def draw_graph(graph, layout="spectral", show_graph=True):
 
   if show_graph:
     plt.show()
+
+  return fig

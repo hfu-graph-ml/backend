@@ -78,8 +78,8 @@ class GraphEnv(gym.Env):
 
       if graph_is_valid:
         mood_scores = get_edge_scores(self.graph.edges())
-        reward_terminal = (highest_possible_edge_mood_score - np.mean(mood_scores)) / \
-            highest_possible_edge_mood_score * self.config['rewards']['terminal_valid_score_multiplier']
+        reward_terminal = (np.sum(mood_scores) - self.config['rewards']['score_min']) / (
+            self.config['rewards']['score_max'] - self.config['rewards']['score_min']) * self.config['rewards']['terminal_valid_score_multiplier']
 
         # draw finalized graph
         if self.config['debugging']['draw_correct_graphs']:

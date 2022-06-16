@@ -1,6 +1,6 @@
 # TODOs
-- compute edge score matrix (and use to look up values instead)
-- prepare saving unique generated graphs as images
+- randomly pre-add edges in training?
+- (prepare saving unique generated graphs as images)?
 - scale training data (randomly generate more nodes to draw from)
 - use git commit hash in model id to associate trained models with its codebase
 - some form of changelog / training documentation
@@ -9,10 +9,8 @@
 - maybe use hyperopt?
 - improve code structure and add explaining comments for next project group
 
-- fix sampled node ids
-- layer num too large?
+- fix sampled node ids (implemented, to test)
 - debug & verify node embeddings, ...
-- optimize mood score rewards (normalize between max and min possible score)
 
 # Notes
 - failing in completing some pre-connected graphs (model 2022-06-09_14-21-02):
@@ -34,3 +32,5 @@
 - PPO_52 allow more bad steps, handle structural validity at end of epoch, add vec env 8xDummyVecEnv
 - 2022-06-07_08-51-24 reverse PPO_52 changes to PPO_47, keep vec env
 - test_temp/PPO2 (rewards 0.5/-0.5/20/-20 and 4xDummyVecEnv) vs 2022-06-07_08-51-24 (rewards 1/-1/20/-10)
+- 2022-06-16_11-28-14 (normalized terminal score rewards) vs 2022-06-09_14-21-02
+- ? (layer_num=1 and steps_per_epoch=4000) vs 2022-06-16_11-28-14

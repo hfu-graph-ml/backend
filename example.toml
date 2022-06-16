@@ -4,11 +4,11 @@ num_node_features = 4
 
 [model]
 emb_size = 8
-layer_num_g = 4
+layer_num_g = 1
 
 [training]
 max_steps = 100
-steps_per_epoch = 1000
+steps_per_epoch = 4000
 num_training_envs = 4
 batch_size = 80 # batch_size that is a factor of steps_per_epoch * num_training_envs is recommended
 epochs = 1e7
@@ -17,6 +17,8 @@ epochs = 1e7
 step_edge_correct = 0.5
 step_edge_incorrect = -0.5
 terminal_valid_score_multiplier = 20.0
+score_min = 4
+score_max = 13
 terminal_invalid = -20.0
 
 [debugging]
