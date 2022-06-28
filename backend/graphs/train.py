@@ -33,7 +33,7 @@ else:
 def make_env(rank, seed=0):
   def _init():
     env = GraphEnv()
-    env.init(base_graph=base_graph)
+    env.init(base_graph=base_graph, preconnect_nodes_probability=config["training"]["preconnect_nodes_probability"])
     env.seed(seed + rank)
     return env
   set_random_seed(seed)

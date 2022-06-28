@@ -5,6 +5,8 @@ from config import config
 
 random.seed(0)
 
+tdm = True
+
 # feature 1: age
 feature_list_age = {
     "child": 0,
@@ -30,20 +32,22 @@ feature_list_drinker = {
 # feature 4: relationship
 feature_list_relationship = {
     "family_1": 0,
-    "friends_1": 1,
+    "family_2": 1,
+    "friends_1": 2,
+    "friends_2": 3,
+    "friends_3": 4,
+    "friends_4": 5,
     "no_relationship": None,
 }
 
-if config['data']['num_nodes'] == 20:
-    feature_list_relationship = {
-        "family_1": 0,
-        "family_2": 1,
-        "friends_1": 2,
-        "friends_2": 3,
-        "friends_3": 4,
-        "friends_4": 5,
-        "no_relationship": None,
-    }
+if tdm:
+  feature_list_relationship = {
+      "family_1": 0,
+      "friends_1": 2,
+      "friends_2": 3,
+      "friends_3": 4,
+      "no_relationship": None,
+  }
 
 # people to draw from
 all_nodes = [
@@ -69,9 +73,21 @@ all_nodes = [
     [19, "Diego", "old_adult", "spain", "drinking", "no_relationship"],
 ]
 
+all_nodes = all_nodes[0:config['data']['num_nodes']]
 
-if config['data']['num_nodes'] == 6:
-    all_nodes = all_nodes[0:6]
+if tdm:
+  all_nodes = [
+      [0, "Michel", "child", "switzerland", "sober", "family_1"],
+      [1, "Elias", "child", "switzerland", "sober", "family_1"],
+      [2, "Sofia", "young_adult", "switzerland", "sober", "family_1"],
+      [3, "Jorge", "young_adult", "mexico", "drinking", "friends_1"],
+      [4, "Juan", "young_adult", "mexico", "drinking", "friends_1"],
+      [5, "Manuel", "young_adult", "germany", "drinking", "friends_2"],
+      [6, "Laura", "young_adult", "germany", "drinking", "friends_2"],
+      [7, "Stefan", "adult", "germany", "drinking", "no_relationship"],
+      [8, "Robin", "adult", "germany", "drinking", "friends_3"],
+      [9, "Daniel", "adult", "germany", "drinking", "friends_3"],
+  ]
 
 all_nodes_features = []
 for node in all_nodes:

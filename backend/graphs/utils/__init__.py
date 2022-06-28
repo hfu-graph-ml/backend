@@ -22,12 +22,15 @@ def get_draw_graph_options(edge_scores=None):
   return draw_graph_options
 
 
-def draw_graph(graph, layout="spectral", show_graph=True):
+def draw_graph(graph, layout="spring", show_graph=True):
   pos = None
   if layout == "spectral":
     pos = nx.spectral_layout(graph)
+  if layout == "spring":
+    pos = nx.spring_layout(graph)
 
   mood_scores = get_edge_scores(graph.edges())
+  plt.figure(figsize=(12,5)) 
   nx.draw(graph, pos=pos, **get_draw_graph_options(edge_scores=mood_scores))
   fig = plt.gcf()
   fig.suptitle(f"Mood Score: {np.sum(mood_scores):.1f}", fontsize=12)

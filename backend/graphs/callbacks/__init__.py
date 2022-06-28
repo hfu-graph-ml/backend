@@ -108,8 +108,11 @@ class LogValidGraphs(BaseCallback):
     self.valid_graphs.append([x["graph_valid"] for x in self.locals["infos"]])
 
     if self.n_calls % self.check_freq == 0:
-      _, counts = np.unique(self.valid_graphs, return_counts=True)
-      valid_graph_ratio = counts[2] / (counts[1] + counts[2])
+      u, c = np.unique(self.valid_graphs, return_counts=True)
+      counts = dict(zip(u, c))
+      n_valid = counts[1] if 1 in counts.keys() else 0
+      n_invalid = counts[0] if 0 in counts.keys() else 0
+      valid_graph_ratio = n_valid / (n_invalid + n_valid)
       self.logger.record('rollout/valid_graph_ratio', valid_graph_ratio)
       self.valid_graphs = []
 

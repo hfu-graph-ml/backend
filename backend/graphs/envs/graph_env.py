@@ -1,14 +1,12 @@
-import imp
-import os
+import random
 import gym
 import copy
 import numpy as np
 import networkx as nx
-import matplotlib.pyplot as plt
 from utils import draw_graph
 
 from config import config
-from evaluation import valid_table_graph, highest_possible_edge_mood_score
+from evaluation import valid_table_graph
 from data.edge_score_matrix import get_edge_scores
 
 
@@ -16,11 +14,11 @@ class GraphEnv(gym.Env):
   def __init__(self):
     pass
 
-  def init(self, base_graph, reward_step_total=1):
+  def init(self, base_graph, preconnect_nodes_probability=0.0):
     self.config = config
     self.base_graph = base_graph
     self.graph = copy.deepcopy(self.base_graph)
-    self.reward_step_total = reward_step_total
+    self.preconnect_nodes_probability = preconnect_nodes_probability
 
     self.counter = 0
 
@@ -53,10 +51,6 @@ class GraphEnv(gym.Env):
     if self.config['debugging']['print_actions']:
       print(action)
 
-    # draw graph
-    if self.config['debugging']['draw_graph']:
-      draw_graph(self.graph, layout=None)
-
     # get observation
     ob = self.get_observation()
 
@@ -69,12 +63,12 @@ class GraphEnv(gym.Env):
       reward_step = self.config['rewards']['step_edge_correct']
     else:
       reward_step = self.config['rewards']['step_edge_incorrect']
-
+      
     # calculate and use terminal reward
     if stop:
       new = True  # end of episode
 
-      graph_is_valid = valid_table_graph(self.graph, self.num_nodes, self.max_edges)
+      graph_is_valid = valid_table_graph(self.graph)
 
       if graph_is_valid:
         mood_scores = get_edge_scores(self.graph.edges())
@@ -109,10 +103,41 @@ class GraphEnv(gym.Env):
     info['graph_valid'] = int(graph_is_valid) if graph_is_valid != None else -np.inf
     info['mood_score'] = np.sum(mood_scores) if len(mood_scores) > 0 else np.nan
 
+    if self.config['debugging']['print_actions']:
+      print(reward)
+      
+    # draw graph
+    if self.config['debugging']['draw_graph']:
+      draw_graph(self.graph, layout=None)
+
     return ob, reward, new, info
 
   def reset(self):
     self.graph = copy.deepcopy(self.base_graph)
+
+    # preconnecting nodes simulates user input
+    if random.random() < self.preconnect_nodes_probability:
+
+      # create list of shuffled node ids
+      graph_nodes = np.array(self.graph)
+      random.shuffle(graph_nodes)
+
+      # generate grid graph to get valid table structure
+      grid_graph = nx.grid_graph((2, len(graph_nodes)//2))
+
+      # convert positional ids from grid graph eg. (2, 1) to indices eg. 12
+      # use these indices in shuffeled node array to randomly assign new id
+      # and generate edge list for the random table graph
+      graph_edges = [(graph_nodes[edge[0][0]+len(graph_nodes)//2*edge[0][1]], graph_nodes[edge[1][0]+len(graph_nodes)//2*edge[1][1]])
+                     for edge in grid_graph.edges]
+
+      # only add some random amount of edges to achieve incomplete table graph
+      self.graph.add_edges_from(random.sample(graph_edges, k=random.randint(1, len(graph_edges)-1)))
+
+      if self.config['debugging']['draw_preconnected_graphs']:
+        print("preconnected graph")
+        draw_graph(self.graph)
+
     self.counter = 0
     ob = self.get_observation()
     return ob

@@ -2,16 +2,11 @@ from completion import complete_graph
 from data import base_graph
 from utils import draw_graph
 
-# base_graph.add_edge(0, 3)
-# base_graph.add_edge(1, 3)
-# base_graph.add_edge(3, 4) # 2022-06-09_14-21-02
-# draw_graph(base_graph, layout=None)
+# base_graph.add_edges_from([(0, 1), (1, 2), (0, 4), (4, 5), (1, 5), (3, 8), (8, 9), (9, 2)]) # 2022-06-28_16-12-03 hat probleme
+base_graph.add_edges_from([(3, 8), (8, 9), (9, 2), (5, 7)])
+draw_graph(base_graph)
 
-completed_graph = complete_graph(base_graph, "2022-06-09_14-21-02", draw_generated_graphs="only_valid")
+completed_graphs = complete_graph(base_graph, "2022-06-28_16-12-03", draw_generated_graphs="only_valid", n_samples=1000)
 
-if not completed_graph:
-  print("Graph generation failed!")
-  exit()
-
-print("Graph completed!")
-draw_graph(completed_graph[1])
+if completed_graphs:
+  draw_graph(completed_graphs[1])
