@@ -16,6 +16,7 @@ plt.matshow(edge_score_matrix, cmap=ListedColormap([color for color in score_col
 ax = plt.gca()
 ax.set_xticks(range(len(name_list)), labels=name_list)
 ax.set_yticks(range(len(name_list)), labels=name_list)
+plt.xticks(rotation=45)
 for (i, j), z in np.ndenumerate(edge_score_matrix):
   ax.text(j, i, '{:0.1f}'.format(z), ha='center', va='center')
 fig = plt.gcf()
