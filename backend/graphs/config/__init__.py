@@ -74,7 +74,7 @@ def read(path: str) -> Tuple[Config, Error]:
         return None, Error('TOML decode error')
 
 # Load config
-config_path = 'example.toml'
+config_path = os.path.dirname(os.path.realpath(__file__)) + '/example.toml'
 config, err = read(config_path)
 if err != None:
   click.echo(f'Failed to load config \'{config_path}\': {err}')

@@ -9,6 +9,8 @@
 
 # Notes
 - failing in completing some pre-connected graphs
+  - model 2022-06-28_16-12-03:
+    - (9, 2) -> macht probleme wenn 9 kein anderes edge hat
   - model 2022-06-09_14-21-02:
     - (3, 4)
     - (3, 4), (1, 3)
@@ -53,5 +55,10 @@
 
 # Best models
 - for 6 nodes: 2022-06-16_20-37-13
-- for 10 nodes: 2022-06-28_16-12-03
+- for 10 nodes:
+  - 2022-06-28_16-12-03
+  - 2022-06-28_09-50-50
+    - probleme:
+      - 4-5
+      - 4-5_1-0
 - for 20 nodes: ?
