@@ -9,8 +9,7 @@ router = APIRouter()
 @router.get("/complete-graph/{edge_string}", tags=["complete_graph"])
 def get_completed_graph(edge_string: str):
   '''
-  Completes the graph with nodes::
-
+  Completes the graph with nodes:
   - 0 - Michel
   - 1 - Elias
   - 2 - Sofia
@@ -21,11 +20,9 @@ def get_completed_graph(edge_string: str):
   - 7 - Stefan
   - 8 - Robin
   - 9 - Daniel
-
   and edges given via edge_string parameter.
 
-  The edge_string parameter should come in the format used in the following examples::
-
+  The edge_string parameter should come in the format used in the following examples:
   - `/complete-graph/0-1_1-2_8-9` (translates into array of 3 edges [(0, 1), (1, 2), (8, 9)])
   - `/complete-graph/-` (translates into empty array of 0 edges [])
   

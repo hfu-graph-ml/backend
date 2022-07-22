@@ -1,7 +1,7 @@
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv, VecMonitor
 from stable_baselines3.common.utils import set_random_seed
-from callbacks import ConfigLoggerCallback, SaveOnBestTrainingRewardCallback, LogValidActions, LogValidGraphs, LogMoodScores, LogBestGraph
+from callbacks.callbacks import ConfigLoggerCallback, SaveOnBestTrainingRewardCallback, LogValidActions, LogValidGraphs, LogMoodScores, LogBestGraph
 from data import base_graph
 from envs.graph_env import GraphEnv
 from policy.feature_extractor import GCNFeaturesExtractor
