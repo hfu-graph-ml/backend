@@ -6,7 +6,7 @@ import networkx as nx
 from utils import draw_graph
 
 from config import config
-from evaluation import valid_table_graph
+from evaluation.evaluation import valid_table_graph
 from data.edge_score_matrix import get_edge_scores
 
 
@@ -23,7 +23,7 @@ class GraphEnv(gym.Env):
     # *Do not use this function! Please use the `init` method instead.*
     pass
 
-  def init(self, base_graph, preconnect_nodes_probability=0):
+  def init(self, base_graph: nx.Graph, preconnect_nodes_probability=0):
     '''
     Initializes the environment.
 
@@ -199,7 +199,7 @@ class GraphEnv(gym.Env):
 
   def get_observation(self):
     """
-    Converts the seating plan graph with type nx.Graph to dict with adjacency matrix and node matrix with features.
+    Converts the seating plan graph with type `nx.Graph` to dict with adjacency matrix and node matrix with features.
 
     Returns:
         ob: Observation dict where ob['adj'] is E with dim 1 x n x n and ob['node'] is F with dim 1 x n x m.

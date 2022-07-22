@@ -3,7 +3,7 @@ from matplotlib.colors import ListedColormap
 import pandas as pd
 import numpy as np
 
-from evaluation import calculate_edge_score_matrix
+from evaluation.evaluation import calculate_edge_score_matrix
 from utils.colors import score_color_map
 from data import all_nodes_features, all_nodes
 
