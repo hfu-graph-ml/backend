@@ -16,8 +16,15 @@ from utils import draw_graph
 
 
 class ConfigLoggerCallback(BaseCallback):
-  def __init__(self, config=config, verbose=0):
-    super(ConfigLoggerCallback, self).__init__(verbose)
+  '''
+  Callback for printing the configuration file used to train the model to the TensorBoard log.
+
+  Args:
+      config: Configuration as dict.
+  '''
+
+  def __init__(self, config=config):
+    super(ConfigLoggerCallback, self).__init__(verbose=0)
     self.config = config
 
   def _on_training_start(self) -> bool:
@@ -35,15 +42,14 @@ class ConfigLoggerCallback(BaseCallback):
 
 
 class SaveOnBestTrainingRewardCallback(BaseCallback):
-  """
-  Callback for saving a model (the check is done every ``check_freq`` steps)
-  based on the training reward (in practice, we recommend using ``EvalCallback``).
+  '''
+  Callback for saving a model (the check is done every ``check_freq`` steps) based on the training reward.
 
-  :param check_freq:
-  :param log_dir: Path to the folder where the model will be saved.
-    It must contains the file created by the ``Monitor`` wrapper.
-  :param verbose: Verbosity level.
-  """
+  Args:
+      log_dir: Path to the folder where the model will be saved. It must contains the file created by the ``Monitor`` wrapper.
+      check_freq: Frequency of steps in which to check if a better model can be saved. Defaults to number of steps per epoch.
+      verbose: Verbosity level.
+  '''
 
   def __init__(self, log_dir: str, check_freq: int = config["training"]["steps_per_epoch"], verbose: int = 1):
     super(SaveOnBestTrainingRewardCallback, self).__init__(verbose)
@@ -81,6 +87,13 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
 
 
 class LogValidActions(BaseCallback):
+  '''
+  Callback for logging the ratio of valid actions the model takes to the TensorBoard log.
+
+  Args:
+      check_freq: Frequency of steps in which to log a new value. Defaults to number of steps per epoch.
+  '''
+
   def __init__(self, check_freq: int = config["training"]["steps_per_epoch"]):
     super(LogValidActions, self).__init__()
     self.check_freq = check_freq
@@ -99,6 +112,13 @@ class LogValidActions(BaseCallback):
 
 
 class LogValidGraphs(BaseCallback):
+  '''
+  Callback for logging the ratio of valid graphs the model generates to the TensorBoard log.
+
+  Args:
+      check_freq: Frequency of steps in which to log a new value. Defaults to number of steps per epoch.
+  '''
+
   def __init__(self, check_freq: int = config["training"]["steps_per_epoch"]):
     super(LogValidGraphs, self).__init__()
     self.check_freq = check_freq
@@ -120,6 +140,13 @@ class LogValidGraphs(BaseCallback):
 
 
 class LogMoodScores(BaseCallback):
+  '''
+  Callback for logging the mean mood score of valid graphs the model generates to the TensorBoard log. NaN if the model didn't generate any valid graphs.
+
+  Args:
+      check_freq: Frequency of steps in which to log a new value. Defaults to number of steps per epoch.
+  '''
+  
   def __init__(self, check_freq: int = config["training"]["steps_per_epoch"]):
     super(LogMoodScores, self).__init__()
     self.check_freq = check_freq
@@ -138,6 +165,14 @@ class LogMoodScores(BaseCallback):
 
 
 class LogBestGraph(BaseCallback):
+  '''
+  Callback for logging and keeping track of the highest and lowest mood scores of valid graphs the model generates to the TensorBoard log.
+  The best valid graph will also be visualized as figure.
+
+  Args:
+      check_freq: Frequency of steps in which to log a new value. Defaults to number of steps per epoch.
+  '''
+  
   def __init__(self, check_freq: int = config["training"]["steps_per_epoch"]):
     super(LogBestGraph, self).__init__()
     self.check_freq = check_freq

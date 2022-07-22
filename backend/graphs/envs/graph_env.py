@@ -11,10 +11,26 @@ from data.edge_score_matrix import get_edge_scores
 
 
 class GraphEnv(gym.Env):
+  '''
+  This class describes the environment that the agent interacts with and gets its feedback from (in form of rewards).
+  It holds a representation of the seating plan graph and updates it according to the agent's actions.
+
+  *Please use the `init` method to initialize the environment correctly.*
+  '''
+
   def __init__(self):
+    # Legacy initialization function without args.
+    # *Do not use this function! Please use the `init` method instead.*
     pass
 
-  def init(self, base_graph, preconnect_nodes_probability=0.0):
+  def init(self, base_graph, preconnect_nodes_probability=0):
+    '''
+    Initializes the environment.
+
+    Args:
+        base_graph: The seating plan graph the environment starts with and is reset to. It should contain all nodes and may also have edges.
+        preconnect_nodes_probability (`float`, optional): The probability with wich a random number of edges get added the seating plan graph after resetting the environment. Defaults to 0.
+    '''
     self.config = config
     self.base_graph = base_graph
     self.graph = copy.deepcopy(self.base_graph)
@@ -38,6 +54,18 @@ class GraphEnv(gym.Env):
       draw_graph(self.graph, layout=None)
 
   def step(self, action):
+    '''
+    Updates the environment according to the given `action` if it's valid. Sets rewards for the agent. Once the graph has enough edges, it sets terminal signal that resets the environment.
+
+    Args:
+        action: The action to manipulate the seating plan graph. An array holding two integers for the IDs of the nodes to connect.
+
+    Returns:
+        ob: The observation of the seating plan graph as `dict` with adjacency matrix (adj) and node matrix with features (node).
+        reward: The reward calculated in the current step.
+        new: The terminal signal to reset the environment.
+        info: A dict with useful information for evaluation.
+    '''
     # init
     info = {}  # info we care about
 
@@ -63,7 +91,7 @@ class GraphEnv(gym.Env):
       reward_step = self.config['rewards']['step_edge_correct']
     else:
       reward_step = self.config['rewards']['step_edge_incorrect']
-      
+
     # calculate and use terminal reward
     if stop:
       new = True  # end of episode
@@ -105,7 +133,7 @@ class GraphEnv(gym.Env):
 
     if self.config['debugging']['print_actions']:
       print(reward)
-      
+
     # draw graph
     if self.config['debugging']['draw_graph']:
       draw_graph(self.graph, layout=None)
@@ -113,6 +141,9 @@ class GraphEnv(gym.Env):
     return ob, reward, new, info
 
   def reset(self):
+    '''
+    Resets the environment's seating plan graph to given `self.base_graph` and with the probability set by `self.preconnect_nodes_probability` adds random number of edges (between 1 and `max_edges` - 1).
+    '''
     self.graph = copy.deepcopy(self.base_graph)
 
     # preconnecting nodes simulates user input
@@ -147,8 +178,13 @@ class GraphEnv(gym.Env):
 
   def _add_edge(self, action):
     """
-    :param action: [first_node, second_node]
-    :return:
+    Adds only valid edges between the given nodes.
+
+    Args:
+        action: Array of two nodes to connect.
+    
+    Returns:
+        True if valid edge was added successfully. False if invalid edge wasn't added successfully.
     """
 
     if self.graph.has_edge(int(action[0]), int(action[1])) or int(action[0]) == int(action[1]) or self.graph.degree(action[0]) >= 3 or self.graph.degree(action[1]) >= 3:
@@ -163,8 +199,10 @@ class GraphEnv(gym.Env):
 
   def get_observation(self):
     """
-    :return: ob, where ob['adj'] is E with dim 1 x n x n and ob['node']
-    is F with dim 1 x n x m.
+    Converts the seating plan graph with type nx.Graph to dict with adjacency matrix and node matrix with features.
+
+    Returns:
+        ob: Observation dict where ob['adj'] is E with dim 1 x n x n and ob['node'] is F with dim 1 x n x m.
     """
 
     ob = {}
