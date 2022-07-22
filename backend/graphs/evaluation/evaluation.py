@@ -52,6 +52,7 @@ def calculate_mood_score(edge_1, edge_2):
     Calculates the mood score between two nodes according to it's features.
 
     The mood score is a sum of the individual scores for each feature:
+
     - Age score (see method `calculate_age_score`).
     - Country score (see method `edge_score_country`).
     - Drinker score (see method `edge_score_drinker`).
@@ -77,6 +78,7 @@ def calculate_age_score(age_1: int, age_2: int) -> float:
     Calculates the age score of the edge.
 
     The age score is calculated as followed:
+
     - if age group difference is 0, score is 1
     - if age group difference is 1, score is 0.5
     - if age group difference is 2 or more, score is 0
@@ -103,11 +105,13 @@ def calculate_country_score(country_1: int, country_2: int) -> float:
     Calculates the country score of the edge.
 
     The country score is calculated as followed:
+
     - if country is the same, score is 1
     - if country is different but its language is the same, score is 0.5
     - if country and its language is different, score is 0
 
     Country codes and language:
+
     - 0: Germany (german)
     - 1: Swiss (german)
     - 2: Spain (spanish)
@@ -134,6 +138,7 @@ def calculate_drinker_score(drinker_1: int, drinker_2: int) -> float:
     Calculates the drinker score of the edge.
 
     The drinker score is calculated as followed:
+
     - if drinker value is the same, score is 1
     - else, score is 0
 
@@ -153,6 +158,7 @@ def calculate_relationship_score(relationship_1: int, relationship_2: int) -> fl
     Calculates the relationship score of the edge.
 
     The relationship score is calculated as followed:
+    
     - if relationship value is the same, score is 0.5
     - else, score is 0
 
